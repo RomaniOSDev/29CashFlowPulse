@@ -15,3 +15,4 @@ enum Frequency: String, Codable {
 }
 
 
+

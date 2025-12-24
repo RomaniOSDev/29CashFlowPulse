@@ -34,3 +34,4 @@ struct FinancialPulse: Identifiable {
 }
 
 
+

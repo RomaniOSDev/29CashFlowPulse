@@ -25,104 +25,110 @@ struct MainPulseView: View {
                     PulseView(pulse: pulse)
                 }
                 
-                VStack(spacing: 40) {
-                    Spacer()
-                    
-                    // Current Balance
-                    VStack(spacing: 8) {
-                        Text("Balance")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.appTextSecondary)
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // Top spacing
+                        Spacer()
+                            .frame(height: max(20, geometry.size.height * 0.05))
                         
-                        Text(formatCurrency(viewModel.currentBalance))
-                            .font(.system(size: 56, weight: .bold, design: .rounded))
-                            .foregroundColor(.appAccentPrimary)
-                            .minimumScaleFactor(0.3)
-                            .lineLimit(1)
-                            .padding(.horizontal, 20)
-                    }
-                    
-                    // Central Pulse Sphere
-                    ZStack {
-                        // Outer pulse rings
-                        ForEach(0..<3) { index in
+                        // Current Balance
+                        VStack(spacing: 8) {
+                            Text("Balance")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.appTextSecondary)
+                            
+                            Text(formatCurrency(viewModel.currentBalance))
+                                .font(.system(size: min(56, geometry.size.width * 0.12), weight: .bold, design: .rounded))
+                                .foregroundColor(.appAccentPrimary)
+                                .minimumScaleFactor(0.3)
+                                .lineLimit(1)
+                                .padding(.horizontal, 20)
+                        }
+                        .padding(.bottom, max(20, geometry.size.height * 0.03))
+                        
+                        // Central Pulse Sphere
+                        ZStack {
+                            // Outer pulse rings
+                            ForEach(0..<3) { index in
+                                Circle()
+                                    .stroke(
+                                        pulseColor.opacity(0.3 - Double(index) * 0.1),
+                                        lineWidth: 2
+                                    )
+                                    .frame(width: min(200, geometry.size.width * 0.4), height: min(200, geometry.size.width * 0.4))
+                                    .scaleEffect(pulseScale + CGFloat(index) * 0.2)
+                                    .opacity(pulseScale > 1.0 ? 1.0 - Double(index) * 0.3 : 0)
+                            }
+                            
+                            // Main sphere
                             Circle()
-                                .stroke(
-                                    pulseColor.opacity(0.3 - Double(index) * 0.1),
-                                    lineWidth: 2
+                                .fill(
+                                    LinearGradient(
+                                        colors: [pulseColor.opacity(0.6), pulseColor.opacity(0.3)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
                                 )
-                                .frame(width: 200, height: 200)
-                                .scaleEffect(pulseScale + CGFloat(index) * 0.2)
-                                .opacity(pulseScale > 1.0 ? 1.0 - Double(index) * 0.3 : 0)
+                                .frame(width: min(150, geometry.size.width * 0.3), height: min(150, geometry.size.width * 0.3))
+                                .shadow(color: pulseColor.opacity(0.5), radius: 20)
+                        }
+                        .padding(.bottom, max(20, geometry.size.height * 0.03))
+                        .onAppear {
+                            withAnimation(
+                                Animation.easeInOut(duration: 2.0)
+                                    .repeatForever(autoreverses: true)
+                            ) {
+                                pulseScale = 1.2
+                            }
                         }
                         
-                        // Main sphere
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [pulseColor.opacity(0.6), pulseColor.opacity(0.3)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                        // Quick Action Buttons
+                        HStack(spacing: 20) {
+                            QuickActionButton(
+                                title: "+ Income",
+                                color: .incomeColor,
+                                icon: "plus.circle.fill"
+                            ) {
+                                quickAddType = .income
+                                showQuickAdd = true
+                            }
+                            
+                            QuickActionButton(
+                                title: "- Expense",
+                                color: .expenseColor,
+                                icon: "minus.circle.fill"
+                            ) {
+                                quickAddType = .expense
+                                showQuickAdd = true
+                            }
+                        }
+                        .padding(.horizontal, max(40, geometry.size.width * 0.1))
+                        .padding(.bottom, max(20, geometry.size.height * 0.03))
+                        
+                        // Statistics Cards
+                        VStack(spacing: 16) {
+                            StatisticRow(
+                                period: "Today",
+                                income: viewModel.todayIncome,
+                                expense: viewModel.todayExpense
                             )
-                            .frame(width: 150, height: 150)
-                            .shadow(color: pulseColor.opacity(0.5), radius: 20)
-                    }
-                    .onAppear {
-                        withAnimation(
-                            Animation.easeInOut(duration: 2.0)
-                                .repeatForever(autoreverses: true)
-                        ) {
-                            pulseScale = 1.2
+                            
+                            StatisticRow(
+                                period: "Week",
+                                income: viewModel.weekIncome,
+                                expense: viewModel.weekExpense
+                            )
+                            
+                            StatisticRow(
+                                period: "Month",
+                                income: viewModel.monthIncome,
+                                expense: viewModel.monthExpense
+                            )
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 40)
                     }
-                    
-                    // Quick Action Buttons
-                    HStack(spacing: 20) {
-                        QuickActionButton(
-                            title: "+ Income",
-                            color: .incomeColor,
-                            icon: "plus.circle.fill"
-                        ) {
-                            quickAddType = .income
-                            showQuickAdd = true
-                        }
-                        
-                        QuickActionButton(
-                            title: "- Expense",
-                            color: .expenseColor,
-                            icon: "minus.circle.fill"
-                        ) {
-                            quickAddType = .expense
-                            showQuickAdd = true
-                        }
-                    }
-                    .padding(.horizontal, 40)
-                    
-                    // Statistics Cards
-                    VStack(spacing: 16) {
-                        StatisticRow(
-                            period: "Today",
-                            income: viewModel.todayIncome,
-                            expense: viewModel.todayExpense
-                        )
-                        
-                        StatisticRow(
-                            period: "Week",
-                            income: viewModel.weekIncome,
-                            expense: viewModel.weekExpense
-                        )
-                        
-                        StatisticRow(
-                            period: "Month",
-                            income: viewModel.monthIncome,
-                            expense: viewModel.monthExpense
-                        )
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 40)
-                    
-                    Spacer()
+                    .frame(minHeight: geometry.size.height)
                 }
             }
         }
@@ -192,11 +198,12 @@ struct StatisticRow: View {
     let expense: Double
     
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
             Text(period)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.appTextSecondary)
-                .frame(width: 60, alignment: .leading)
+                .frame(minWidth: 60, alignment: .leading)
+                .lineLimit(1)
             
             Spacer()
             
@@ -231,11 +238,15 @@ struct StatisticItem: View {
             Text(label)
                 .font(.system(size: 10))
                 .foregroundColor(.appTextSecondary)
+                .lineLimit(1)
             
             Text(formatAmount(amount))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(color)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
+        .frame(minWidth: 60)
     }
     
     private func formatAmount(_ amount: Double) -> String {

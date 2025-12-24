@@ -52,3 +52,4 @@ struct FinancialTransaction: Identifiable, Codable {
 }
 
 
+
